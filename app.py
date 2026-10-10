@@ -29,6 +29,7 @@ with st.sidebar:
     st.header("索引管理")
     if st.button("重建索引"):
         with st.spinner("正在读取设定 → 切分 → 向量化…"):
+            pipe.store.reset()
             n = pipe.build_index()
         st.success(f"已建立 {n} 个片段")
     st.info(f"数据目录：`{config.DATA_DIR}`")

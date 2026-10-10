@@ -7,7 +7,7 @@ from rag.retriever import Retriever
 
 def test_retriever_returns_top_k(tmp_path):
     emb = FakeEmbedder(dim=64)
-    store = VectorStore(Path(tmp_path))
+    store = VectorStore(Path(tmp_path), ephemeral=True)
     texts = ["林澈 剑修 十七岁", "苏晚 药师", "灵气 复苏"]
     store.add(
         ids=["0", "1", "2"],

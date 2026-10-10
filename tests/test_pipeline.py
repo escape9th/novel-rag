@@ -24,7 +24,7 @@ def test_pipeline_build_and_query(tmp_path):
     (book / "c.md").write_text("# 角色\n林澈，剑修，十七岁。", encoding="utf-8")
 
     emb = FakeEmbedder(dim=64)
-    store = VectorStore(tmp_path / "chroma")
+    store = VectorStore(tmp_path / "chroma", ephemeral=True)
     retriever = Retriever(emb, store, top_k=3)
     gen = FakeGenerator()
     pipe = Pipeline(data_dir, tmp_path / "chroma", emb, store, retriever, gen,

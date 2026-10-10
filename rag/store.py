@@ -1,8 +1,11 @@
 """Chroma 向量库封装：写入向量、按相似度查询。"""
+import uuid
 from dataclasses import dataclass
 from pathlib import Path
 
 import chromadb
+
+COLLECTION_NAME = "novel_settings"
 
 
 @dataclass
@@ -14,10 +17,17 @@ class Hit:
 
 
 class VectorStore:
-    def __init__(self, persist_dir: Path):
-        self._client = chromadb.PersistentClient(path=str(persist_dir))
+    def __init__(self, persist_dir: Path, ephemeral: bool = False):
+        settings = chromadb.Settings(anonymized_telemetry=False)
+        if ephemeral:
+            # 内存模式：测试用，不落盘；用唯一集合名避免同进程内多个实例共享同一内存库
+            self._client = chromadb.EphemeralClient(settings=settings)
+            self._name = f"{COLLECTION_NAME}_{uuid.uuid4().hex[:8]}"
+        else:
+            self._client = chromadb.PersistentClient(path=str(persist_dir), settings=settings)
+            self._name = COLLECTION_NAME
         self._collection = self._client.get_or_create_collection(
-            name="novel_settings", metadata={"hnsw:space": "cosine"}
+            name=self._name, metadata={"hnsw:space": "cosine"}
         )
 
     def add(self, ids, texts, embeddings, metadatas):
@@ -52,9 +62,9 @@ class VectorStore:
 
     def reset(self):
         try:
-            self._client.delete_collection("novel_settings")
+            self._client.delete_collection(self._name)
         except Exception:
             pass
         self._collection = self._client.get_or_create_collection(
-            name="novel_settings", metadata={"hnsw:space": "cosine"}
+            name=self._name, metadata={"hnsw:space": "cosine"}
         )
